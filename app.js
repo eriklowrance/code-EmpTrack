@@ -1,7 +1,24 @@
 const connection = require("./connection");
+const logo = require("asciiart-logo");
 const inquirer = require("inquirer");
 const { async } = require("rxjs");
 // Start our application
+console.log(
+    logo({
+      name: "EMPLOYEE TRACKER",
+      font: "DOOM",
+      lineChars: 14,
+      padding: 8,
+      margin: 8,
+      borderColor: "bold-green",
+      logoColor: "bold-red",
+      textColor: "green",
+    })
+      .emptyLine()
+      .right("version 3.7.123")
+      .emptyLine()
+      .render()
+  );
 init();
 
 async function init() {
@@ -72,7 +89,18 @@ async function init() {
 }
 
 async function viewEmployees() {
-  const query = "SELECT * FROM employee";
+    const query = `select  
+    department.name AS 'Department',
+    role.title AS 'Job Title',
+    IFNULL(CONCAT(m.first_name, ' ', m.last_name),
+    'Top Manager') AS 'Manager',
+    CONCAT(e.first_name,' ',e.last_name) AS 'Direct report', 
+    role.salary AS 'Employee Salary'
+    from employee e
+    left join employee m on m.id = e.manager_id
+    inner join role on e.role_id = role.id
+    inner join department on role.department_id = department.id
+    ORDER BY manager DESC`
   const data = await connection.query(query);
   console.table(data);
   init();
@@ -197,3 +225,41 @@ async function addEmployee() {
   console.log("Employee Added!");
   init();
 }
+
+async function updateEmployee() {
+    const employeeData = await connection.query("SELECT id, concat(first_name, ' ', last_name)as 'name' FROM employee")
+    console.log(employeeData);
+    let query = "SELECT * FROM role";
+  const roleData = await connection.query(query);
+      const { update, title } = await inquirer.prompt([
+        {
+          name: "update",
+          type: "list",
+          message: "Which employee would you like to update?",
+          choices: employeeData.map((employee) => ({
+            name: employee.name,
+            value: employee.id,
+          })),
+        },
+        
+        {
+            name: "title",
+            type: "list",
+            message: "What role does this employee have?",
+            choices: roleData.map((role) => ({
+                name: role.title,
+                value: role.id,
+              })),
+        },
+    ])
+    // let employeeList = employeeData.map(
+    //     (employee) => employee.first_name + " " + employee.last_name
+    //   );
+    let query1 = "UPDATE employee SET role_id = ? WHERE id = ?";
+    const data = await connection.query(query1, [title, update])
+    init();
+    };
+    //   const employeeObj = employeeData.find(
+    //     (employee) => manager === employee.first_name + " " + employee.last_name
+    //   );
+
