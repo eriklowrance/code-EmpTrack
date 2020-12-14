@@ -28,15 +28,10 @@ async function init() {
     message: "What would you like to do?",
     choices: [
       "View all Employees",
-      "View all Employeees by Department",
-      "View all Employees by Manager",
       "Add Employee",
-      "Remove Employee",
       "Update Employee Role",
-      "Update Employee Manager",
       "View All Roles",
       "Add Role",
-      "Remove Role",
       "Add Department",
       "View Department",
       "exit",
@@ -47,32 +42,17 @@ async function init() {
     case "View all Employees":
       viewEmployees();
       break;
-    case "View all Employeees by Department":
-      byDepartment();
-      break;
-    case "View all Employees by Manager":
-      byManager();
-      break;
     case "Add Employee":
       addEmployee();
       break;
-    case "Remove Employee":
-      removeEmployee();
-      break;
     case "Update Employee Role":
       updateEmployee();
-      break;
-    case "Update Employee Manager":
-      updateManager();
       break;
     case "View All Roles":
       viewRoles();
       break;
     case "Add Role":
       addRole();
-      break;
-    case "Remove Role":
-      removeRole();
       break;
     case "Add Department":
       addDepartment();
@@ -94,7 +74,7 @@ async function viewEmployees() {
     role.title AS 'Job Title',
     IFNULL(CONCAT(m.first_name, ' ', m.last_name),
     'Top Manager') AS 'Manager',
-    CONCAT(e.first_name,' ',e.last_name) AS 'Direct report', 
+    CONCAT(e.first_name,' ',e.last_name) AS 'Employee', 
     role.salary AS 'Employee Salary'
     from employee e
     left join employee m on m.id = e.manager_id
@@ -105,20 +85,6 @@ async function viewEmployees() {
   console.table(data);
   init();
 }
-
-// async function byDepartment() {
-//     const { dept } = await inquirer.prompt({
-//         name: "dept",
-//         type: "list",
-//         message: "What department would you like to view?",
-//         choices: ["Sales", "Engineering", "Finance", "Legal"],
-//       });
-//     const query =
-//     "SELECT * FROM employee WHERE name = ?";
-//   const data = await connection.query(query, dept);
-//   console.table(data);
-//   init();
-// }
 
 async function addDepartment() {
   const { dept } = await inquirer.prompt({
@@ -228,7 +194,7 @@ async function addEmployee() {
 
 async function updateEmployee() {
     const employeeData = await connection.query("SELECT id, concat(first_name, ' ', last_name)as 'name' FROM employee")
-    console.log(employeeData);
+    console.table(employeeData);
     let query = "SELECT * FROM role";
   const roleData = await connection.query(query);
       const { update, title } = await inquirer.prompt([
@@ -252,14 +218,11 @@ async function updateEmployee() {
               })),
         },
     ])
-    // let employeeList = employeeData.map(
-    //     (employee) => employee.first_name + " " + employee.last_name
-    //   );
+
     let query1 = "UPDATE employee SET role_id = ? WHERE id = ?";
     const data = await connection.query(query1, [title, update])
     init();
     };
-    //   const employeeObj = employeeData.find(
-    //     (employee) => manager === employee.first_name + " " + employee.last_name
-    //   );
+  
+
 
